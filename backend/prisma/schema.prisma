@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id     String  @id @default(uuid())
+  name   String
+  domain String?
+  status String  @default("active")
+
+  waNumbers WaNumber[]
+  catalogs  Catalog[]
+  orders    Order[]
+  configs   BotConfig[]
+  // messages      Message[]
+  // subscriptions Subscription[]
+}
+
+model WaNumber {
+  id        String  @id @default(uuid())
+  tenant_id String
+  type      String // baileys or cloud
+  number    String
+  token     String? // for cloud api
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+}
+
+model Catalog {
+  id        String  @id @default(uuid())
+  tenant_id String
+  name      String
+  price     Int
+  image_url String?
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+}
+
+model Order {
+  id              String @id @default(uuid())
+  tenant_id       String
+  customer_number String
+  items           Json
+  status          String @default("pending")
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+}
+
+model BotConfig {
+  id        String @id @default(uuid())
+  tenant_id String
+  config    Json
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+}
